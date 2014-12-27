@@ -2,9 +2,11 @@ import urllib.request
 import urllib.parse
 import sys
 import random
+import os
+import time 
 import threading
     
-uri=input("Enter url")
+uri=input("Enter url\n")
 try:
     url = urllib.request.urlopen(uri)
    
@@ -43,8 +45,9 @@ notr_list=[11,7,13,19,17,23,21]
 random.shuffle(notr_list)
 
 notr=notr_list[random.randint(0,6)]#no of thread
-notr=3
+notr=5
 chunk_size=k/notr
+
 nodo=0#no of chunks done ; to monitor speed
 #chunk_size=(k/20)
 def monitor_speed():
@@ -54,40 +57,50 @@ def monitor_speed():
     if percen > 100:
         print("Downloaded!")
     else:
-        print(str(percen) + "% Downloaded")
+        print(str(percen-1) + "% Downloaded\n")
     
         
-def download(start):
-##    try:
-##        req = urllib.request.Request(uri)
-##        req.headers['Range'] = 'bytes=%s-%s' % (start, start+chunk_size)
-##        f = urllib.request.urlopen(req)
-##        monitor_speed()
-##        parts[start] = f.read()
-##    except:
-##        print("Unkown Error! ")
-##        exit()
-    req = urllib.request.Request(uri)
-    req.headers['Range'] = 'bytes=%s-%s' % (start, start+chunk_size)
-    f = urllib.request.urlopen(req)#is pretty fast as compared to read!
-  #  print("done")
-    parts[start] = f.read()#takes time;blocking method
-    monitor_speed()
+def download(start,sumthng):
+    try:
+        req = urllib.request.Request(uri)
+    except:
+        print("Bad Request! :/")
+        exit()
+    try:
+        req.headers['Range'] = 'bytes=%s-%s' % (start, start+chunk_size)
+    except:
+        print("Bad Header! :/")
+        exit()
+    try:
+        f = urllib.request.urlopen(req)
+    except:
+        print("No response! :/")
+        exit()
+
+    try:
+        parts[start] = f.read()
+        print(int(nodo)," Completed! :D")
+        monitor_speed()
+    except:
+        print("Network Error while downloading!\n")
+        exit()
+
 #numberofthreads
 print("size- ",k)
 #print("Chunk Size- ",chunk_size)
 print("Downloading")
-print("0% Downloaded")
+startt=time.time()
 for i in range(0,notr):
-    t = threading.Thread(download(i*chunk_size))
+    t = threading.Thread(target=download,args=(i*chunk_size,"justrandom"))
     t.start()
-    print("1")
+    print("started ",i)
     threads.append( t)
 
-
+print("0% Downloaded")
 for i in threads:
     i.join()
-
+endt=time.time()
+result = ''
 chunk = ''
 i=1
 print("Joining please wait! ")
@@ -96,11 +109,11 @@ while chunk!= None:
     if key in parts:
         chunk = parts[i*chunk_size]
         parts[0]=parts[0]+parts[i*chunk_size]
- 
+       # result = result + chunk
         i = i + 1
     else:
         break
-
+#print(result)
 try:
     f = open(details[0],"wb")
 except:
@@ -109,3 +122,5 @@ except:
 f.write(parts[0])
 f.close()
 print("Completed! :)")
+print(os.path.getsize(details[0]))
+print("Time taken-",endt-startt)
