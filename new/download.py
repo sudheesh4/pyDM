@@ -1,9 +1,16 @@
+
+import socket
+import socks
+
+socks.set_default_proxy(socks.SOCKS5, "localhost",9150)
+socket.socket = socks.socksocket
 import urllib.request
 import sys
 import os
 import time
 import threading
 from tkinter import *
+import tkinter.ttk as ttk
 re=None
 newsize=0
 notr=7
@@ -24,7 +31,16 @@ def guiclt(goturi,gotname):
         root.protocol("WM_DELETE_WINDOW", myexit)
         lab=Label(root,text="Wait...",fg="red")
         per=Label(root,text="Please Wait..",fg="blue")
+        
         pause=Button(root,text="PAUSE")
+        
+        pb_hd = ttk.Progressbar(root, orient='horizontal', mode='determinate')
+        
+        pb_hd.pack(expand=True)
+        
+        pb_hd["maximum"] = 100
+        
+        pb_hd['value']=0
         
         lab.pack()
         per.pack()
@@ -45,7 +61,7 @@ def guiclt(goturi,gotname):
         def printgui(text,k):
             text=text
             k['text']=text
-            print(text)
+            
         def reqfunc(a,b):
             global re
             re=urllib.request.Request(a)
@@ -145,7 +161,9 @@ def guiclt(goturi,gotname):
                         printgui('Paused',lab)
                         continue
                     printgui('Started',lab)
-                    printgui(str(round((newsize*100)/self.size,2))+"% completed! :D",per) 
+                    time.sleep(0.75)
+                    printgui(str(round((newsize*100)/self.size,2))+"% completed! :D",per)
+                    pb_hd["value"] = int(round((newsize*100)/self.size,2))
  
                 return
             def er(self):
