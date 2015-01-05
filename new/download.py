@@ -25,11 +25,13 @@ def compl():
 def guiclt(goturi,gotname):
     def myexit():
         pass
+    root=Tk()
+    root.title('downloader')
+    lab=Label(root,text="Wait...",fg="red")
     try:
-        root=Tk()
-        root.title('downloader')
-        root.protocol("WM_DELETE_WINDOW", myexit)
-        lab=Label(root,text="Wait...",fg="red")
+
+        #root.protocol("WM_DELETE_WINDOW", myexit)
+        
         per=Label(root,text="Please Wait..",fg="blue")
         
         pause=Button(root,text="PAUSE")
@@ -228,8 +230,12 @@ def guiclt(goturi,gotname):
         t.start()
             
         root.mainloop()
+        print('error')
+        sys.exit
     except:
-        print('ERROR')
+        print('error')
+        
+        
 
 def interact(u,n):
     guiclt(u,n)
