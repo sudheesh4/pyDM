@@ -5,8 +5,16 @@ import time
 import threading
 from tkinter import *
 re=None
-nocompl=0
+newsize=0
 notr=7
+pauseint=0
+pauseflag=False
+def compl():
+    k=0
+    for i in range(0,7):
+        k=k+totc[i]
+    return k
+        
 def guiclt(goturi,gotname):
     def myexit():
         pass
@@ -14,15 +22,26 @@ def guiclt(goturi,gotname):
         root=Tk()
         root.title('downloader')
         root.protocol("WM_DELETE_WINDOW", myexit)
-        ##    info=Text(root,height=15,width=30,state=DISABLED)
-        ##    info.pack()
         lab=Label(root,text="Wait...",fg="red")
         per=Label(root,text="Please Wait..",fg="blue")
+        pause=Button(root,text="PAUSE")
         
         lab.pack()
         per.pack()
-        
-
+        def pauseplay(event):
+            global pauseint,pauseflag
+            if pauseint==0:
+                pauseflag=True
+                pauseint=1
+                pause['text']='Play'
+                time.sleep(0.5)
+            else:
+                pauseflag=False
+                pause['text']='Pause'
+                pauseint=0
+                time.sleep(0.5)
+        pause.bind('<Button-1>',pauseplay)
+        pause.pack()
         def printgui(text,k):
             text=text
             k['text']=text
@@ -69,22 +88,36 @@ def guiclt(goturi,gotname):
                 self.chunk=int(self.size/notr)
             def downl(self,start,randomargument):
                 req=None
-                global re
+                global re,totc,pauseflag,nosut
                 i=0
                 req=re
+                st=start
+                en=int((start+self.chunk))
+                dconst=en
+                self.parts[start]=b''
+
+                
                 while i<self.maxi:
                     try:
-                        req.headers['Range']='bytes=%s-%s'% (start,start+self.chunk)
+                        req.headers['Range']='bytes=%s-%s'% (st,en)
+                        
+                        req.headers['User-agent']='Mozilla/5.0'
                     except:
                         i=i+1
                         continue
+
                     break
+
                 if i==self.maxi:
                     printgui("Bad Header!:/",lab)
                     self.error=True
                     return
                 i=0
                 while i<self.maxi:
+                    if pauseflag:
+                        printgui('Paused',lab)
+                        continue
+                    printgui('Requesting...',lab)
                     try:
                         f=urllib.request.urlopen(req)
                     except:
@@ -95,10 +128,25 @@ def guiclt(goturi,gotname):
                     printgui("No response!:/",lab)
                     self.error=True
                     return
-                self.parts[start]=f.read()
-                global nocompl,notr
-                nocompl=nocompl+1
-                printgui(str(nocompl*100/notr)+" completed! :D",per)
+                global newsize
+                newchunk=int(self.chunk/3)
+                while True:
+                    if pauseflag:
+                        printgui('Paused',lab)
+                        continue
+                    printgui('Started',lab)
+                    tempchnk=f.read(newchunk)
+
+                    newsize=newsize+len(tempchnk)
+                    if not tempchnk:
+                        break                    
+                    self.parts[start]=self.parts[start]+tempchnk
+                    while pauseflag:
+                        printgui('Paused',lab)
+                        continue
+                    printgui('Started',lab)
+                    printgui(str(round((newsize*100)/self.size,2))+"% completed! :D",per) 
+ 
                 return
             def er(self):
                 return self.error
