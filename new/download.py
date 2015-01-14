@@ -63,6 +63,7 @@ def guiclt(goturi,gotname):
         def printgui(text,k):
             text=text
             k['text']=text
+            root.update()
             
         def reqfunc(a,b):
             global re
@@ -166,6 +167,7 @@ def guiclt(goturi,gotname):
                     time.sleep(0.75)
                     printgui(str(round((newsize*100)/self.size,2))+"% completed! :D",per)
                     pb_hd["value"] = int(round((newsize*100)/self.size,2))
+                    root.update()
  
                 return
             def er(self):
